@@ -61,9 +61,31 @@ const getVehicleByID = (req, res) => {
     });
 }
 
+// Update vehicle
+const updateVehicle = (req, res) => {
+    const { VehicleID } = req.params;
+    const { Type, Make, Capacity, VehicleNumber, Description } = req.body;
+
+    connection.query(
+        'UPDATE Vehicle SET Type = ?, Make = ? , Capacity = ?, VehicleNumber = ?, Description = ? WHERE VehicleID = ?',
+        [Type, Make, Capacity, VehicleNumber, Description, VehicleID],
+        (err, result) => {
+            if (err) {
+                console.error('Error updating availability:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            if (result.affectedRows === 0) {
+                return res.status(404).send('Vehicle record not found');
+            }
+            res.status(200).json({ message: 'Vehicle updated successfully' });
+        }
+    );
+};
+
 module.exports = {
     addVehicle,
     getAllVehicles,
     deleteVehicle,
-    getVehicleByID
+    getVehicleByID,
+    updateVehicle
 }

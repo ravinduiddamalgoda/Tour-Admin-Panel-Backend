@@ -12,7 +12,7 @@ router.post('/login', (req, res, next) => {
 
     try {
 
-        connection.query('SELECT UserID, Password, role, email FROM User WHERE email = ?', [email], async (err, rows) => {
+        connection.query('SELECT UserID, Password, role, email,FirstName FROM User WHERE email = ?', [email], async (err, rows) => {
             if (err) {
                 console.error('Error querying MySQL database:', err);
                 res.status(500).send('Internal Server Error');
@@ -27,7 +27,8 @@ router.post('/login', (req, res, next) => {
             if(result){
                const playload = await signToken(password , hashedPassword, {
                     id: rows[0].UserID , 
-                    role:rows[0].role, 
+                    role:rows[0].role,
+                    name:rows[0].FirstName, 
                     email:rows[0].email});
                     // console.log(playload);
                     // console.log("login done");
@@ -59,7 +60,6 @@ router.get('/current-user', authGuard, (req, res) => {
         if (!user) {
             return res.status(400).send({ err: 'User not logged in' });
         }
-        // console.log(user)
         connection.query('SELECT * FROM User WHERE UserID = ?', [user.id], (err, rows) => {
             if (err) {
                 console.error('Error querying MySQL database:', err);
@@ -68,7 +68,7 @@ router.get('/current-user', authGuard, (req, res) => {
             }
 
             if (rows.length === 1) {
-                const { UserID, Email, Role } = rows[0];
+                //const { UserID, Email, Role } = rows[0];
                 res.json({ user});
             } else {
                 res.status(404).send({ err: 'User not found' });
