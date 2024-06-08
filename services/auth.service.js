@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 
 const APP_SECRET = 'travel-API-secret';
-const APP_ACCESS_TOKEN_EXP_SECS = 3600;
+const APP_ACCESS_TOKEN_EXP_SECS = 3600*24;
 const JWT_OPTIONS = {
     algorithm: "HS256",
     issuer: "travelAPI.com/api",

@@ -60,7 +60,7 @@ const getHotelByID = (req, res) => {
 const updateHotel = (req, res) => {
     const { Name, HotType, PhoneNumber, HotDesc, Packages, Address, Email } = req.body;
     const { HotelID } = req.params;
-    const query = 'UPDATE Hotel SET Name = ?, Hotype = ?, PhoneNumber = ?, HotDesc = ?, Packages = ?, Address = ?, Email = ? WHERE HotelID = ?';
+    const query = 'UPDATE Hotel SET Name = ?, HotType = ?, PhoneNumber = ?, HotDesc = ?, Packages = ?, Address = ?, Email = ? WHERE HotelID = ?';
     connection.query(query, [Name, HotType, PhoneNumber, HotDesc, Packages, Address, Email, HotelID], (err, result) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
