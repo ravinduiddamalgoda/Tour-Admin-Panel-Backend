@@ -4,6 +4,7 @@ const connection = require('../Config/db');
 const bcrypt = require('bcrypt');
 const validator = require('validator');
 const { authGuard } = require('../utils/validator');
+const { sendmail } = require('../services/SendEmail');
 
 const router = express.Router();
 
@@ -62,6 +63,7 @@ router.post('/registerCustomer', (req, res) => {
                             res.status(500).send('Internal Server Error');
                             return;
                         }
+                        sendmail(Email, "Welcome to Travel Management System", "You have been registered as a Customer in Travel Management System. Please login to your account to view your profile and update your details.");
                         res.status(201).json({ message: 'User registered successfully' });
                     });
                 });
@@ -84,7 +86,7 @@ router.post('/registerGuide', (req, res) => {
             res.status(500).send('Internal Server Error');
             return;
         }
-
+        
         // Check if username, NIC, email, and phone number already exist
         connection.query('SELECT * FROM User WHERE Email = ? OR PhoneNumber = ?', [Email, PhoneNumber], (err, rows) => {
             if (err) {
@@ -132,6 +134,7 @@ router.post('/registerGuide', (req, res) => {
                             res.status(500).send('Internal Server Error');
                             return;
                         }
+                        sendmail(Email, "Welcome to Travel Management System", "You have been registered as a guide in Travel Management System. Please login to your account to view your profile and update your details.");
                         res.status(201).json({ message: 'Guide registered successfully' });
                     });
                 });
