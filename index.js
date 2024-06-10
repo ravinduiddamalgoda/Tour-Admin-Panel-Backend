@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const cors = require('cors');
 
@@ -38,6 +39,8 @@ app.use((err, req, res, next) => {
         res.status(500).json({ error: err.message || 'Something went wrong!' });
     }
 });
+
+app.use('/packageimages', express.static(path.join(__dirname, '/PackageImages')));
 
 app.use('/user', UserControllers);
 app.use('/hotel', HotelRouter);
