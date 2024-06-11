@@ -1,5 +1,6 @@
 const connection = require('../Config/db');
 const bcrypt = require('bcrypt');
+const { sendmail } = require('../services/SendEmail');
 
 const addInquiry = (req, res) => {
     const { arrivalDate, departureDate, message, numAdults, numChildren, email , mobile , firstName , lastName , country } = req.body;
@@ -74,7 +75,7 @@ const addInquiryNewUser = (req, res) => {
                     res.status(400).send("Error adding customer");
                     return;
                 }
-
+                sendmail(email, "Welcome to Travel Experts", "Thank you for registering with Travel Experts. We look forward to serving you.");
                 const customerId = result.insertId;
                 const inquiryDate = new Date().toISOString().split('T')[0];
                 const status = 'Pending';
