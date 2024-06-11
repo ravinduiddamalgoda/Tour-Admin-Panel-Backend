@@ -63,7 +63,12 @@ router.post('/registerCustomer', (req, res) => {
                             res.status(500).send('Internal Server Error');
                             return;
                         }
-                        sendmail(Email, "Welcome to Travel Management System", "You have been registered as a Customer in Travel Management System. Please login to your account to view your profile and update your details.");
+                        try{
+                            sendmail(Email, "Welcome to Travel Management System", "You have been registered as a Customer in Travel Management System. Please login to your account to view your profile and update your details.");
+                        }catch(err){
+                            console.error('Error sending email:', err);
+                        }
+                        
                         res.status(201).json({ message: 'User registered successfully' });
                     });
                 });
@@ -281,56 +286,62 @@ router.get('/getUserByID/:UserId', (req, res) => {
 
 router.delete('/deleteUser/:UserId', authGuard, (req, res) => {
     const UserId = req.params.UserId;
+
     connection.query('SELECT * FROM User WHERE UserId = ?', [UserId], (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
-            res.status(500).send('Internal Server Error');
-            return;
+            return res.status(500).send('Internal Server Error');
         }
         if (rows.length === 0) {
-            res.status(404).send('User not found');
-            return;
+            return res.status(404).send('User not found');
         }
-        if (rows[0].Role == "Guide" || rows[0].Role == "guide") {
-            connection.query('DELETE FROM Guide WHERE UserId = ?', [UserId], (err, result) => {
-                if (err) {
-                    console.error('Error deleting from MySQL database:', err);
-                    res.status(500).send('Internal Server Error');
-                    return;
-                }
-            });
-        }
-        if (rows[0].Role == "Customer" || rows[0].Role == "customer") {
-            connection.query('DELETE FROM Customer WHERE UserId = ?', [UserId], (err, result) => {
-                if (err) {
-                    console.error('Error deleting from MySQL database:', err);
-                    res.status(500).send('Internal Server Error');
-                    return;
-                }
-            });
-        }
-        if (rows[0].Role == "Staff" || rows[0].Role == "staff") {
-            connection.query('DELETE FROM Staff WHERE UserId = ?', [UserId], (err, result) => {
-                if (err) {
-                    console.error('Error deleting from MySQL database:', err);
-                    res.status(500).send('Internal Server Error');
-                    return;
-                }
-            });
-        }
-        connection.query('DELETE FROM User WHERE UserId = ?', [UserId], (err, result) => {
-            if (err) {
-                console.error('Error deleting from MySQL database:', err);
-                res.status(500).send('Internal Server Error');
-                return;
-            }
-            res.status(200).json({ message: 'User deleted successfully' });
-        });
 
+        const userRole = rows[0].Role;
 
+        const deleteUser = () => {
+            connection.query('DELETE FROM User WHERE UserId = ?', [UserId], (err, result) => {
+                if (err) {
+                    console.error('Error deleting from MySQL database:', err);
+                    return res.status(500).send('Internal Server Error');
+                }
+                res.status(200).json({ message: 'User deleted successfully' });
+            });
+        };
+
+        const deleteRelatedRecords = (table, callback) => {
+            connection.query(`DELETE FROM ${table} WHERE UserId = ?`, [UserId], (err, result) => {
+                if (err) {
+                    console.error(`Error deleting from ${table} in MySQL database:`, err);
+                    return res.status(500).send('Internal Server Error');
+                }
+                callback();
+            });
+        };
+
+        const deleteInquiries = (callback) => {
+            connection.query('DELETE FROM Inquiry WHERE CustomerID = (SELECT CustomerID FROM Customer WHERE UserId = ?)', [UserId], (err, result) => {
+                if (err) {
+                    console.error('Error deleting from Inquiry in MySQL database:', err);
+                    return res.status(500).send('Internal Server Error');
+                }
+                callback();
+            });
+        };
+
+        if (userRole.toLowerCase() === "guide") {
+            deleteRelatedRecords('Guide', deleteUser);
+        } else if (userRole.toLowerCase() === "customer") {
+            deleteInquiries(() => {
+                deleteRelatedRecords('Customer', deleteUser);
+            });
+        } else if (userRole.toLowerCase() === "staff") {
+            deleteRelatedRecords('Staff', deleteUser);
+        } else {
+            deleteUser();
+        }
     });
-
 });
+
 
 // Get user count
 router.get('/getUserCount', (req, res) => {
@@ -452,5 +463,15 @@ router.put('/updateGuideProfile', authGuard, (req, res) => {
         res.status(400).send({ err: err });
     }
 })
+
+router.get('/getAllGuides', (req, res) => {
+    connection.query('SELECT * FROM User WHERE Role = "Guide"', (err, rows) => {
+        if (err) {
+            console.error('Error querying MySQL database:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.json(rows);
+    })
+});
 
 module.exports = router;
