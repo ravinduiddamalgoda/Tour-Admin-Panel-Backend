@@ -156,8 +156,39 @@ const getTripByCustomerIDOLD = (req, res) => {
     });  
 };
 
+const getOngoingTrips = (req, res) => {
+    const query = 'SELECT * FROM Trip WHERE Status != "Completed"';
+    connection.query(query, (err, rows) => {
+        if (err) {
+            console.error('Error querying MySQL database:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        res.json(rows);
+    });
+};
 
+const getPreviousTrips = (req, res) => {
+    const query = 'SELECT * FROM Trip WHERE Status = "Completed"';
+    connection.query(query, (err, rows) => {
+        if (err) {
+            console.error('Error querying MySQL database:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        res.json(rows);
+    });
+};
 
+const updateTripStatus = (req, res) => {
+    const { TripID, Status } = req.body;
+    const query = 'UPDATE Trip SET Status = ? WHERE TripID = ?';
+    connection.query(query, [Status, TripID], (err, result) => {
+        if (err) {
+            console.error('Error updating MySQL database:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        res.status(200).json({ message: 'Trip status updated successfully' });
+    });
+};
 
 module.exports = {
     addTrip,
@@ -166,5 +197,8 @@ module.exports = {
     getTripByID,
     getTripByGuideID,
     getTripByCustomerIDNew,
-    getTripByCustomerIDOLD  
+    getTripByCustomerIDOLD,
+    getOngoingTrips,
+    getPreviousTrips,
+    updateTripStatus  
 }
