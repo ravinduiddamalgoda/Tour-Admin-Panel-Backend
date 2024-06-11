@@ -1,4 +1,6 @@
 const connection = require('../Config/db');
+const bcrypt = require('bcrypt');
+const { sendmail } = require('../services/SendEmail');
 
 const addInquiry = (req, res) => {
     const { arrivalDate, departureDate, message, numAdults, numChildren, email , mobile , firstName , lastName , country } = req.body;
@@ -46,49 +48,50 @@ const addInquiry = (req, res) => {
 
 
 const addInquiryNewUser = (req, res) => {
-    const { arrivalDate, departureDate, message, numAdults, numChildren, email , mobile , firstName , lastName , country , password} = req.body;
-    // InquiryDate
-    // const data = getLastInquiryID();
-    // let inquiryID = 1;
-    // if (!(data === undefined || data === null)) {
-    //     inquiryID = data + 1;
-    // }
+    const { arrivalDate, departureDate, message, numAdults, numChildren, email, mobile, firstName, lastName, country, password } = req.body;
 
     const AddUserQuery = 'INSERT INTO User(Email, Password, FirstName, LastName, PhoneNumber, Role) VALUES (?, ?, ?, ?, ?, ?)';
-    connection.query(AddUserQuery, [email, password, firstName, lastName, mobile, 'Customer'], (err, result) => {
+    const CustomerQuery = 'INSERT INTO Customer(UserID, Country) VALUES (?, ?)';
+    const InquiryQuery = 'INSERT INTO Inquiry(InquiryDate, ArrivalDate, DepartureDate, Message, AdultsCount, ChildrenCount, Status, CustomerID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+
+    bcrypt.hash(password, 10, (err, hash) => {
         if (err) {
-            console.error('Error querying MySQL database:', err);
-            res.status(400).send("Error adding user");
+            console.error('Error hashing password:', err);
+            res.status(500).send("Internal server error");
             return;
         }
-        const CustomerQuery = 'INSERT INTO Customer(UserID, Country) VALUES (?, ?)';
-        connection.query(CustomerQuery, [result.insertId, country], (err, result) => {
+
+        connection.query(AddUserQuery, [email, hash, firstName, lastName, mobile, 'Customer'], (err, result) => {
             if (err) {
                 console.error('Error querying MySQL database:', err);
-                res.status(400).send("Error adding customer");
+                res.status(400).send("Error adding user");
                 return;
             }
-            const InquiryDate = new Date().toISOString().split('T')[0];
-            const Status = 'Pending';
-            const CustomerID = result.insertId;
 
-            const query = 'INSERT INTO Inquiry( InquiryDate, ArrivalDate, DepartureDate, Message, AdultsCount, ChildrenCount, Status, CustomerID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-
-            connection.query(query, [InquiryDate, arrivalDate, departureDate, message, numAdults, numChildren, Status, CustomerID], (err, result) => {
+            const userId = result.insertId;
+            connection.query(CustomerQuery, [userId, country], (err, result) => {
                 if (err) {
                     console.error('Error querying MySQL database:', err);
-                    res.status(400).send("Error adding inquiry");
+                    res.status(400).send("Error adding customer");
                     return;
                 }
-                res.status(201).send("Inquiry added successfully");
+                sendmail(email, "Welcome to Travel Experts", "Thank you for registering with Travel Experts. We look forward to serving you.");
+                const customerId = result.insertId;
+                const inquiryDate = new Date().toISOString().split('T')[0];
+                const status = 'Pending';
+
+                connection.query(InquiryQuery, [inquiryDate, arrivalDate, departureDate, message, numAdults, numChildren, status, customerId], (err, result) => {
+                    if (err) {
+                        console.error('Error querying MySQL database:', err);
+                        res.status(400).send("Error adding inquiry");
+                        return;
+                    }
+                    res.status(201).send("Inquiry added successfully");
+                });
             });
         });
-
     });
-    
-
-    
-}
+};
 
 const getLastInquiryID = () => {
     connection.query('SELECT * FROM Inquiry ORDER BY InquiryID DESC LIMIT 1', (err, rows) => {

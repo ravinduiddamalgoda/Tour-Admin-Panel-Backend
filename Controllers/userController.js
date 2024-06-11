@@ -67,6 +67,7 @@ router.post('/registerCustomer', (req, res) => {
                         const loginURL = currentURL + '/login';
                         sendmail(Email, "Welcome to SWEN Tours & Travels", `You have been registered as a Customer. \nPlease login to your account to view your profile and update your details.\n\n${loginURL}`);
                         res.status(201).json({ message: 'Customer registered successfully' });
+
                     });
                 });
 
@@ -598,15 +599,14 @@ router.get('/getUserByID/:UserId', (req, res) => {
 
 router.delete('/deleteUser/:UserId', authGuard, (req, res) => {
     const UserId = req.params.UserId;
+
     connection.query('SELECT * FROM User WHERE UserId = ?', [UserId], (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
-            res.status(500).send('Internal Server Error');
-            return;
+            return res.status(500).send('Internal Server Error');
         }
         if (rows.length === 0) {
-            res.status(404).send('User not found');
-            return;
+            return res.status(404).send('User not found');
         }
 
         connection.query('UPDATE User SET Status = ? WHERE UserID = ?', ['Inactive', UserId], (err, result) => {
@@ -617,6 +617,7 @@ router.delete('/deleteUser/:UserId', authGuard, (req, res) => {
             }
             res.status(200).json({ message: 'User Deleted successfully' });
         });
+
     });
 });
 
@@ -741,5 +742,15 @@ router.put('/updateGuideProfile', authGuard, (req, res) => {
         res.status(400).send({ err: err });
     }
 })
+
+router.get('/getAllGuides', (req, res) => {
+    connection.query('SELECT * FROM User WHERE Role = "Guide"', (err, rows) => {
+        if (err) {
+            console.error('Error querying MySQL database:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.json(rows);
+    })
+});
 
 module.exports = router;

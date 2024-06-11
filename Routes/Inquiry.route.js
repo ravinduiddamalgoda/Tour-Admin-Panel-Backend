@@ -8,6 +8,7 @@ InquiryRouter.delete('/:InquiryID', deleteInquiry);
 InquiryRouter.get('/:InquiryID', getInquiryByID);
 InquiryRouter.post('/addInquiryNewUser', addInquiryNewUser);
 
+
 module.exports = InquiryRouter;
 
 
