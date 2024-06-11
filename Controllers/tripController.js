@@ -1,8 +1,11 @@
 const connection = require('../Config/db');
 const mysql = require('mysql2/promise');
+const { sendmail } = require('../services/SendEmail');
 
 const addTrip = async (req, res) => {
     const { CustomerID, GuideID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes, TotalDistance } = req.body;
+    let CustomerEmailAdd = '';
+    let GuideEmailAdd = '';
 
     try {
         // Create a connection pool
@@ -19,6 +22,11 @@ const addTrip = async (req, res) => {
             return res.status(400).json({ message: 'Customer not found' });
         }
         const CusID = customerRows[0].CustomerID;
+        const [CustomerEmailQuery] = await pool.query('SELECT * FROM User WHERE UserID = ?', [CustomerID]);
+        CustomerEmailAdd = CustomerEmailQuery[0].Email;
+
+        const [GuideEmailQuery] = await pool.query('SELECT * FROM User WHERE UserID = ?', [GuideID]);
+        GuideEmailAdd = GuideEmailQuery[0].Email;
 
         // Fetch GuideID
         const [guideRows] = await pool.query('SELECT GuideID FROM Guide WHERE UserID = ?', [GuideID]);
@@ -33,6 +41,8 @@ const addTrip = async (req, res) => {
         await pool.query(query, [CusID, GuidID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, Status, SpecialNotes, TotalDistance]);
 
         console.log("Trip added successfully");
+        sendmail(CustomerEmailAdd, "Trip Added", "Your trip has been added successfully");
+        sendmail(GuideEmailAdd, "New Trip", "You have a new trip to guide");
         res.send("Trip added successfully");
 
         // Close the connection pool
