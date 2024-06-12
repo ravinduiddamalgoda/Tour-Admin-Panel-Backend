@@ -1,7 +1,7 @@
 const express = require('express');
 const ChatRouter = express.Router();
 const { getChatByInquiry , sendMessageByInquiry , sendFileByInquiry } = require('../Controllers/chatController');
-const upload = require('../utils/upload');
+const {upload} = require('../utils/upload');
 
 
 
