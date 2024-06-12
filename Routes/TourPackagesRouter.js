@@ -8,6 +8,7 @@ const tourPackagesController = require('../Controllers/TourPackagesController');
 TourPackagesrouter.post('/addTourPackage', upload.single('image'),tourPackagesController.addTourPackage);
 
 TourPackagesrouter.get('/getAllTourPackages', tourPackagesController.getAllTourPackages);
+TourPackagesrouter.get('/getAll', tourPackagesController.getAll);
 
 TourPackagesrouter.get('/getTourPackage/:PackageID', tourPackagesController.getTourPackageById);
 

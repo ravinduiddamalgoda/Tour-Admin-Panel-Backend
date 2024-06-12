@@ -80,7 +80,16 @@ const getAllTourPackages = (req, res) => {
     });
 };
 
-
+// Get all tour packages for front
+const getAll = (req, res) => {
+    connection.query('SELECT * FROM TourPackages', (err, rows) => {
+        if (err) {
+            console.error('Error querying tour packages:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.status(200).json(rows);
+    });
+};
 
 // Get a tour package by PackageID
 const getTourPackageById = (req, res) => {
@@ -221,5 +230,7 @@ module.exports = {
     getTourPackageById,
     updateTourPackage,
     deleteTourPackage,
+    getAll,
     upload
+    
 };
