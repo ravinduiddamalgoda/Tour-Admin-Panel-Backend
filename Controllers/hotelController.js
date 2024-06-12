@@ -24,25 +24,12 @@ const getLastHotelID = () => {
 }
 
 const getALLHotels = (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
-    const startIndex = (page - 1) * limit;
-
-    connection.query('SELECT COUNT(*) AS totalHotels FROM Hotel WHERE status = "Active"', (err, countResult) => {
+    connection.query('SELECT * FROM Hotel WHERE status = "Active"', (err, rows) => {
         if (err) {
-            console.error('Error counting hotels:', err);
+            console.error('Error querying hotels:', err);
             return res.status(500).send('Internal Server Error');
         }
-
-        const totalHotels = countResult[0].totalHotels;
-        const totalPages = Math.ceil(totalHotels / limit);
-
-        connection.query('SELECT * FROM Hotel WHERE status = "Active" LIMIT ?, ?', [startIndex, parseInt(limit)], (err, rows) => {
-            if (err) {
-                console.error('Error querying hotels:', err);
-                return res.status(500).send('Internal Server Error');
-            }
-            res.status(200).json({ hotels: rows, totalPages });
-        });
+        res.status(200).json({ hotels: rows });
     });
 };
 
