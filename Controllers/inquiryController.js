@@ -10,7 +10,12 @@ const addInquiry = (req, res) => {
     // if (!(data === undefined || data === null)) {
     //     inquiryID = data + 1;
     // }
-
+    let ChildrenCount;
+    if (numChildren === '') {
+        ChildrenCount = 0;
+    }else {
+        ChildrenCount = numChildren;
+    }
     const UserQuery = 'SELECT * FROM User WHERE email = ?';
     connection.query(UserQuery, [email], (err, rows) => {
         if (err) {
@@ -34,7 +39,7 @@ const addInquiry = (req, res) => {
 
             const query = 'INSERT INTO Inquiry( InquiryDate, ArrivalDate, DepartureDate, Message, AdultsCount, ChildrenCount, Status, CustomerID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
-            connection.query(query, [InquiryDate, arrivalDate, departureDate, message, numAdults, numChildren, Status, CustomerID], (err, result) => {
+            connection.query(query, [InquiryDate, arrivalDate, departureDate, message, numAdults, ChildrenCount, Status, CustomerID], (err, result) => {
                 if (err) {
                     console.error('Error querying MySQL database:', err);
                     return;
@@ -53,7 +58,12 @@ const addInquiryNewUser = (req, res) => {
     const AddUserQuery = 'INSERT INTO User(Email, Password, FirstName, LastName, PhoneNumber, Role) VALUES (?, ?, ?, ?, ?, ?)';
     const CustomerQuery = 'INSERT INTO Customer(UserID, Country) VALUES (?, ?)';
     const InquiryQuery = 'INSERT INTO Inquiry(InquiryDate, ArrivalDate, DepartureDate, Message, AdultsCount, ChildrenCount, Status, CustomerID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-
+    let ChildrenCount;
+    if (numChildren === '') {
+        ChildrenCount = 0;
+    }else {
+        ChildrenCount = numChildren;
+    }
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) {
             console.error('Error hashing password:', err);
@@ -80,7 +90,7 @@ const addInquiryNewUser = (req, res) => {
                 const inquiryDate = new Date().toISOString().split('T')[0];
                 const status = 'Pending';
 
-                connection.query(InquiryQuery, [inquiryDate, arrivalDate, departureDate, message, numAdults, numChildren, status, customerId], (err, result) => {
+                connection.query(InquiryQuery, [inquiryDate, arrivalDate, departureDate, message, numAdults, ChildrenCount, status, customerId], (err, result) => {
                     if (err) {
                         console.error('Error querying MySQL database:', err);
                         res.status(400).send("Error adding inquiry");
@@ -104,7 +114,7 @@ const getLastInquiryID = () => {
 }
 
 const getAllInquiries = (req, res) => {
-    connection.query('SELECT * FROM Inquiry', (err, rows) => {
+    connection.query('SELECT * FROM Inquiry WHERE Status != "cancel"', (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
             return;
@@ -137,10 +147,44 @@ const getInquiryByID = (req, res) => {
     });
 }
 
+const updateInquiryStatus = (req, res) => {
+    const { InquiryID } = req.params;
+    const { Status } = req.body;
+    const query = 'UPDATE Inquiry SET Status = ? WHERE InquiryID = ?';
+    connection.query(query, [Status, InquiryID], (err, result) => {
+        if (err) {
+            console.error('Error querying MySQL database:', err);
+            return;
+        }
+        res.send("Inquiry status updated successfully");
+    });
+}  
+
+const getInquiryByUserID = (req, res) => {
+    const { UserID } = req.params;
+    const query = 'SELECT CustomerID FROM Customer WHERE UserID = ?';
+    connection.query(query, [UserID], (err, rows) => {
+        if (err) {
+            console.error('Error querying MySQL database:', err);
+            return;
+        }
+        const CustomerID = rows[0].CustomerID;
+        const InquiryQuery = 'SELECT * FROM Inquiry WHERE CustomerID = ?';
+        connection.query(InquiryQuery, [CustomerID], (err, rows) => {
+            if (err) {
+                console.error('Error querying MySQL database:', err);
+                return;
+            }
+            res.json(rows);
+        });
+    });
+};
 module.exports = {
     addInquiry,
     getAllInquiries,
     deleteInquiry,
     getInquiryByID,
-    addInquiryNewUser
-}
+    addInquiryNewUser,
+    updateInquiryStatus,
+    getInquiryByUserID
+} 

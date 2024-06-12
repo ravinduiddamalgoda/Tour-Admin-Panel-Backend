@@ -20,6 +20,7 @@ const CustomerPaymentRouter = require('./Routes/CustomerPayment.route');
 const VehicleRouter = require('./Routes/Vehicle.route');
 const TripRouter = require('./Routes/Trip.route');
 const InquiryRouter = require('./Routes/Inquiry.route');
+const ChatRouter = require('./Routes/Chat.Router');
 
 
 app.use(cors({
@@ -41,7 +42,8 @@ app.use((err, req, res, next) => {
 });
 
 app.use('/packageimages', express.static(path.join(__dirname, '/PackageImages')));
-
+app.use('/ChatFiles', express.static(path.join(__dirname, '/ChatFiles')));
+// app.use(express.static(path.join(__dirname, '/ChatFiles')));
 app.use('/user', UserControllers);
 app.use('/hotel', HotelRouter);
 app.use('/auth', AuthControl);
@@ -53,6 +55,7 @@ app.use('/customerPayment' , CustomerPaymentRouter);
 app.use('/vehicle', VehicleRouter);
 app.use('/trip' , TripRouter);
 app.use('/inquiry', InquiryRouter);
+app.use('/chat', ChatRouter);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
