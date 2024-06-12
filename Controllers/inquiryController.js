@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const { sendmail } = require('../services/SendEmail');
 
 const addInquiry = (req, res) => {
+
     const { arrivalDate, departureDate, message, numAdults, numChildren, email , mobile , firstName , lastName , country } = req.body;
     // InquiryDate
     // const data = getLastInquiryID();
@@ -16,6 +17,7 @@ const addInquiry = (req, res) => {
     }else {
         ChildrenCount = numChildren;
     }
+
     const UserQuery = 'SELECT * FROM User WHERE email = ?';
     connection.query(UserQuery, [email], (err, rows) => {
         if (err) {
@@ -26,6 +28,7 @@ const addInquiry = (req, res) => {
             res.send("Customer does not exist");
             return;
         }
+
 
         const CustomerQuery = 'SELECT CustomerID FROM Customer WHERE UserID = ?';
         connection.query(CustomerQuery, [rows[0].UserID], (err, rows) => {
@@ -85,7 +88,9 @@ const addInquiryNewUser = (req, res) => {
                     res.status(400).send("Error adding customer");
                     return;
                 }
-                sendmail(email, "Welcome to Travel Experts", "Thank you for registering with Travel Experts. We look forward to serving you.");
+                const currentURL = 'http://localhost:3000';
+                const loginURL = currentURL + '/login';
+                sendmail(email, "Welcome to SWEN Tours & Travels (Pvt) Ltd.", `Thank you for registering with SWEN Tours. We look forward to serving you.\nYou can Login to your dashboard and chat with our Customer Assistant.\n\n${loginURL}`);
                 const customerId = result.insertId;
                 const inquiryDate = new Date().toISOString().split('T')[0];
                 const status = 'Pending';

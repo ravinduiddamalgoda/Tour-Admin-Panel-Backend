@@ -56,6 +56,32 @@ const addTourPackage = (req, res) => {
 
 // Get all tour packages
 const getAllTourPackages = (req, res) => {
+    const { page, limit } = req.query;
+    const startIndex = (page - 1) * limit;
+
+    connection.query('SELECT COUNT(*) AS totalPackages FROM TourPackages', (err, countResult) => {
+        if (err) {
+            console.error('Error counting tour packages:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        const totalPackages = countResult[0].totalPackages;
+        const totalPages = Math.ceil(totalPackages / limit);
+
+        if (limit) {
+            connection.query('SELECT * FROM TourPackages LIMIT ?, ?', [startIndex, parseInt(limit)], (err, rows) => {
+                if (err) {
+                    console.error('Error querying tour packages:', err);
+                    return res.status(500).send('Internal Server Error');
+                }
+                res.status(200).json({ packages: rows, totalPages });
+            });
+        }
+    });
+};
+
+// Get all tour packages for front
+const getAll = (req, res) => {
     connection.query('SELECT * FROM TourPackages', (err, rows) => {
         if (err) {
             console.error('Error querying tour packages:', err);
@@ -204,5 +230,7 @@ module.exports = {
     getTourPackageById,
     updateTourPackage,
     deleteTourPackage,
+    getAll,
     upload
+    
 };

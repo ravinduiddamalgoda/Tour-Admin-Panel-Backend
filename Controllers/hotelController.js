@@ -2,7 +2,7 @@ const connection = require('../Config/db');
 
 const addHotel = (req, res) => {
     const { Name, HotType, PhoneNumber, HotDesc, Packages, Address, Email } = req.body;
-    const query = 'INSERT INTO Hotel (Name, HotType, PhoneNumber, HotDesc, Packages, Address, Email) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const query = 'INSERT INTO Hotel (Name, HotType, PhoneNumber, HotDesc, Packages, Address, Email, Status) VALUES (?, ?, ?, ?, ?, ?, ?, "Active")';
     connection.query(query, [Name, HotType, PhoneNumber, HotDesc, Packages, Address, Email], (err, result) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
@@ -24,26 +24,30 @@ const getLastHotelID = () => {
 }
 
 const getALLHotels = (req, res) => {
-    connection.query('SELECT * FROM Hotel', (err, rows) => {
+    connection.query('SELECT * FROM Hotel WHERE status = "Active"', (err, rows) => {
         if (err) {
-            console.error('Error querying MySQL database:', err);
-            return res.status(500).send('Internal DB Error');
+            console.error('Error querying hotels:', err);
+            return res.status(500).send('Internal Server Error');
         }
-        res.json(rows);
+        res.status(200).json({ hotels: rows });
     });
-}
+};
+
+
 
 const deleteHotel = (req, res) => {
     const { HotelID } = req.params;
-    const query = 'DELETE FROM Hotel WHERE HotelID = ?';
-    connection.query(query, [HotelID], (err, result) => {
+    const query = 'UPDATE Hotel SET Status = ? WHERE HotelID = ?';
+    const status = 'Inactive';
+    connection.query(query, [status, HotelID], (err, result) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
-            return;
+            return res.status(500).send('Internal Server Error');
         }
         res.send("Hotel deleted successfully");
     });
 }
+
 
 const getHotelByID = (req, res) => {
     const { HotelID } = req.params;
