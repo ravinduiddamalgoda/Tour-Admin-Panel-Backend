@@ -274,7 +274,7 @@ router.post('/registerAdmin', (req, res) => {
 
 router.put('/updateUser/:userID', (req, res) => {
     const { userID } = req.params;
-    const { FirstName, LastName, Email, PhoneNumber, Role, Languages, GuiType, Qualifications, VehicleType, VehicleMake, Capacity, VehicleNumber, Description } = req.body;
+    const { FirstName, LastName, Email, PhoneNumber, Role, Country, Languages, GuiType, Qualifications, VehicleType, VehicleMake, Capacity, VehicleNumber, Description } = req.body;
 
     // Function to update user, guide, and vehicle details
     const updateUserDetails = () => {
@@ -300,6 +300,21 @@ router.put('/updateUser/:userID', (req, res) => {
         if (Role) {
             userUpdateFields.push('Role = ?');
             userUpdateValues.push(Role);
+        }
+
+        // Check if the user is a customer and country is provided
+        if (Role === 'Customer' && Country) {
+            const customerUpdateQuery = 'UPDATE Customer SET Country = ? WHERE UserID = ?';
+            const customerUpdateValues = [Country, userID];
+
+            // Execute the SQL query to update the country in the Customer table
+            connection.query(customerUpdateQuery, customerUpdateValues, (err, customerResult) => {
+                if (err) {
+                    console.error('Error updating Customer table:', err);
+                    res.status(500).send('Internal Server Error');
+                    return;
+                }
+            });
         }
 
         if (userUpdateFields.length > 0) {
@@ -469,7 +484,7 @@ router.put('/updateUser/:userID', (req, res) => {
 
 
 router.get('/', (req, res) => {
-    const { role, page, limit } = req.query;
+    const { role } = req.query;
 
     let queryString = `
         SELECT 
@@ -497,31 +512,18 @@ router.get('/', (req, res) => {
 
     // Add role-based filtering if the role is not "All"
     if (role && role !== "All") {
-        queryString += ` AND User.Role = "${role}"`;
+        queryString += ` AND User.Role = "${role}" ORDER BY User.UserID`;
+    }else{
+        queryString += ` ORDER BY User.UserID`;
     }
-
     connection.query(queryString, (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
             res.status(500).send('Internal Server Error');
             return;
         }
-
-        // Calculate total number of pages
-        const totalUsers = rows.length;
-        const totalPages = Math.ceil(totalUsers / limit);
-
-        // Apply pagination
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + parseInt(limit);
-        const paginatedRows = rows.slice(startIndex, endIndex);
-
-        paginatedRows.map((row) => {
-            delete row.Password;
-        });
-
         // Send users and total pages as response
-        res.status(200).json({ users: paginatedRows, totalPages });
+        res.status(200).json({ rows });
     });
 });
 
