@@ -239,7 +239,7 @@ const getOngoingTrips = (req, res) => {
 
 
 const onGoingTrips = (req, res) => {
-    const query = 'SELECT * FROM Trip WHERE Status != "Completed"';
+    const query = 'SELECT * FROM Trip WHERE Status != "end"';
     connection.query(query, (err,rows) => {
         if(err){
             console.error('Error querying MySQL database:', err);
@@ -250,7 +250,7 @@ const onGoingTrips = (req, res) => {
 }
 
 const getPreviousTrips = (req, res) => {
-    const query = 'SELECT * FROM Trip WHERE Status = "Completed"';
+    const query = 'SELECT * FROM Trip WHERE Status = "end"';
     connection.query(query, (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
