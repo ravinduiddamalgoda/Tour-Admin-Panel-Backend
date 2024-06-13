@@ -13,7 +13,8 @@ const {
     getOngoingTrips, 
     getPreviousTrips, 
     updateTripStatus,
-    updateTripData
+    updateTripData,
+    getTripByGuideIDCustomer
 } = require('../Controllers/tripController');
 
 TripRouter.post('/addTrip', addTrip);
@@ -21,6 +22,7 @@ TripRouter.get('/', getAllTrips);
 TripRouter.delete('/:TripID', deleteTrip);
 TripRouter.get('/:TripID', getTripByID);
 TripRouter.get('/guide/:GuideID', getTripByGuideID);
+TripRouter.get('/tripcustomer/:GuideID', getTripByGuideIDCustomer);
 TripRouter.get('/customer/:CustomerID', getTripByCustomerIDNew);
 TripRouter.get('/getPreviousTrips/:CustomerID', getTripByCustomerIDOLD);
 // TripRouter.get('/get/getOngoingTrips', getOngoingTrips);
