@@ -3,7 +3,7 @@ const mysql = require('mysql2/promise');
 const { sendmail } = require('../services/SendEmail');
 
 const addTrip = async (req, res) => {
-    const { CustomerID, GuideID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes, TotalDistance } = req.body;
+    const { CustomerID, GuideID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes } = req.body;
     let CustomerEmailAdd = '';
     let GuideEmailAdd = '';
 
@@ -37,8 +37,8 @@ const addTrip = async (req, res) => {
 
         // Insert trip data
         const Status = "Pending";
-        const query = 'INSERT INTO Trip (CustomerID, GuideID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, Status, SpecialNotes, TotalDistance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        await pool.query(query, [CusID, GuidID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, Status, SpecialNotes, TotalDistance]);
+        const query = 'INSERT INTO Trip (CustomerID, GuideID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, Status, SpecialNotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        await pool.query(query, [CusID, GuidID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, Status, SpecialNotes]);
 
         console.log("Trip added successfully");
         sendmail(CustomerEmailAdd, "Trip Added", "Your trip has been added successfully");
@@ -51,6 +51,19 @@ const addTrip = async (req, res) => {
         console.error('Error querying MySQL database:', error);
         res.status(500).send('Internal DB Error');
     }
+}
+
+const updateTripData = (req, res) => {
+    const { TripID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes } = req.body;
+    const query = 'UPDATE Trip SET Price = ?, StartDate = ?, EndDate = ?, AdultsCount = ?, ChildrenCount = ?, Description = ?, SpecialNotes = ? WHERE TripID = ?';
+    connection.query(query, [Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes, TripID], (err, result) => {
+        if (err) {
+            console.error('Error updating MySQL database:', err);
+            return;
+        }
+        res.send("Trip data updated successfully");
+    });
+
 }
 
 
@@ -212,15 +225,29 @@ const getTripByCustomerIDOLD = (req, res) => {
 };
 
 const getOngoingTrips = (req, res) => {
+    // const query = 'SELECT * FROM Trip WHERE Status != "Completed"';
+    // connection.query(query, (err, rows) => {
+    //     if (err) {
+    //         console.error('Error querying MySQL database:', err);
+    //         return res.status(500).json({ error: 'Internal Server Error' });
+    //     }
+    //     console.log(rows);
+    //     res.status(200).json(rows);
+    // });
+    res.send("Responce from getOngoingTrips");
+};
+
+
+const onGoingTrips = (req, res) => {
     const query = 'SELECT * FROM Trip WHERE Status != "Completed"';
-    connection.query(query, (err, rows) => {
-        if (err) {
+    connection.query(query, (err,rows) => {
+        if(err){
             console.error('Error querying MySQL database:', err);
             return res.status(500).json({ error: 'Internal Server Error' });
         }
         res.json(rows);
     });
-};
+}
 
 const getPreviousTrips = (req, res) => {
     const query = 'SELECT * FROM Trip WHERE Status = "Completed"';
@@ -256,5 +283,8 @@ module.exports = {
     getOngoingTrips,
     getPreviousTrips,
     updateTripStatus,
-    getTripByGuideIDCustomer
+    getTripByGuideIDCustomer,
+    onGoingTrips,
+    updateTripData
+
 }
