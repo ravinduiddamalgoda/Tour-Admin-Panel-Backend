@@ -746,13 +746,27 @@ router.put('/updateGuideProfile', authGuard, (req, res) => {
 })
 
 router.get('/getAllGuides', (req, res) => {
-    connection.query('SELECT * FROM User WHERE Role = "Guide"', (err, rows) => {
+    const query = `
+        SELECT 
+            User.UserID, User.FirstName, User.LastName, User.Email, User.PhoneNumber,
+            Vehicle.VehicleID, Vehicle.Type as VehicleType, Vehicle.Make as VehicleModel, Vehicle.VehicleNumber as RegistrationNumber,
+            Guide.GuideID, Guide.Languages, Guide.GuiType, Guide.Qualifications, Guide.StartDate, Guide.EndDate
+        FROM User
+        LEFT JOIN Guide ON User.UserID = Guide.UserID
+        LEFT JOIN Vehicle ON Guide.VehicleID = Vehicle.VehicleID
+        WHERE User.Role = 'Guide'
+    `;
+
+    connection.query(query, (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
             return res.status(500).send('Internal Server Error');
         }
         res.json(rows);
-    })
+    });
 });
+
+
+
 
 module.exports = router;

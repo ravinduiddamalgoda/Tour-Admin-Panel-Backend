@@ -14,23 +14,20 @@ const addPayment = (req, res) => {
             return;
         }
         const CustomerID = rows[0].CustomerID;
-        // console.log(CustomerID)
         const EmailQuery = 'SELECT UserID FROM Customer WHERE CustomerID = ?';
         connection.query(EmailQuery, [CustomerID], (err, rows) => {
             if (err) {
                 console.error('Error querying email:', err);
                 return;
             }
-            const UserID =  rows[0].UserID;
-            // console.log(UserID)
+            const UserID = rows[0].UserID;
             const EmailQuery = 'SELECT Email FROM User WHERE UserID = ?';
             connection.query(EmailQuery, [UserID], (err, rows) => {
                 if (err) {
                     console.error('Error querying email:', err);
                     return;
                 }
-                // console.log(rows[0].Email)
-                email =  rows[0].Email;
+                email = rows[0].Email;
                 console.log(rows[0].Email);
                 sendMailWithAttachment(rows[0].Email, 'Payment Receipt', 'Thank you for your payment', file);
                 connection.query(
@@ -41,16 +38,63 @@ const addPayment = (req, res) => {
                             console.error('Error inserting payment:', err);
                             return res.status(500).send('Internal Server Error');
                         }
-                        res.status(201).json({ message: 'Payment added successfully' });
+
+                        // Update Trip status based on PaymentType
+                        let newStatus = '';
+                        if (PaymentType === 'advance') {
+                            newStatus = 'Pending';
+                        } else if (PaymentType === 'active') {
+                            newStatus = 'Active';
+                        } else if (PaymentType === 'balance') {
+                            // Check if total payments for the trip are >= trip price
+                            const TotalPaymentsQuery = `
+                                SELECT SUM(Amount) AS TotalPayments
+                                FROM CustomerPayment
+                                WHERE TripID = ?
+                            `;
+                            connection.query(TotalPaymentsQuery, [TripID], (err, rows) => {
+                                if (err) {
+                                    console.error('Error querying total payments:', err);
+                                    return res.status(500).send('Internal Server Error');
+                                }
+                                const TotalPayments = rows[0].TotalPayments;
+                                const TripPriceQuery = 'SELECT Price FROM Trip WHERE TripID = ?';
+                                connection.query(TripPriceQuery, [TripID], (err, rows) => {
+                                    if (err) {
+                                        console.error('Error querying trip price:', err);
+                                        return res.status(500).send('Internal Server Error');
+                                    }
+                                    const TripPrice = rows[0].Price;
+                                    if (TotalPayments >= TripPrice) {
+                                        newStatus = 'Active';
+                                    }
+                                    if (newStatus) {
+                                        connection.query(
+                                            'UPDATE Trip SET Status = ? WHERE TripID = ?',
+                                            [newStatus, TripID],
+                                            (err, result) => {
+                                                if (err) {
+                                                    console.error('Error updating trip status:', err);
+                                                    return res.status(500).send('Internal Server Error');
+                                                }
+                                                res.status(201).json({ message: 'Payment added and trip status updated successfully' });
+                                            }
+                                        );
+                                    } else {
+                                        res.status(201).json({ message: 'Payment added successfully' });
+                                    }
+                                });
+                            });
+                        } else {
+                            res.status(201).json({ message: 'Payment added successfully' });
+                        }
                     }
-                ); 
+                );
             });
         });
     });
-    // const email =  getEmailInTrip(TripID);
-    // console.log(email);  
-   
 };
+
 
 function getEmailInTrip (TripID)  {
     const CustomerIDQuery = 'SELECT CustomerID FROM Trip WHERE TripID = ?';
