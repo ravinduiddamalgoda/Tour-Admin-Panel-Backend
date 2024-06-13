@@ -119,6 +119,51 @@ const getTripByGuideID = (req, res) => {
     
 }
 
+const getTripByGuideIDCustomer = (req, res) => {
+    let GuideID = req.params.GuideID;
+    const UserQuery = 'SELECT GuideID FROM Guide WHERE UserID = ?';
+
+    connection.query(UserQuery, [GuideID], (err, guideRows) => {
+        if (err) {
+            console.error('Error querying MySQL database:', err);
+            return res.status(500).json({ error: 'Database query error' });
+        }
+
+        if (guideRows.length === 0) {
+            return res.status(404).json({ error: 'Guide not found' });
+        }
+
+        GuideID = guideRows[0].GuideID;
+
+        const query = `
+            SELECT 
+                Trip.*,
+                User.FirstName,
+                User.LastName,
+                User.Email,
+                User.PhoneNumber,
+                Customer.Country
+            FROM 
+                Trip
+            JOIN 
+                Customer ON Trip.CustomerID = Customer.CustomerID
+            JOIN 
+                User ON Customer.UserID = User.UserID
+            WHERE 
+                Trip.GuideID = ?`;
+
+        connection.query(query, [GuideID], (err, tripRows) => {
+            if (err) {
+                console.error('Error querying MySQL database:', err);
+                return res.status(500).json({ error: 'Database query error' });
+            }
+
+            res.json(tripRows);
+        });
+    });
+};
+
+
 
 
 const getTripByCustomerIDNew = (req, res) => {
@@ -210,5 +255,6 @@ module.exports = {
     getTripByCustomerIDOLD,
     getOngoingTrips,
     getPreviousTrips,
-    updateTripStatus  
+    updateTripStatus,
+    getTripByGuideIDCustomer
 }
