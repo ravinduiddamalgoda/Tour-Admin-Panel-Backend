@@ -212,12 +212,8 @@ const getTripByCustomerIDOLD = (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Customer not found' });
         }
-        CustomerID = rows[0].CustomerID;
-<<<<<<< new-achila
+        CustomerID = rows[0].CustomerID; 
         const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND (Status = "End" OR Status = "Close")';
-=======
-        const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND Status = "End" OR Status = "Close"';
->>>>>>> main
         connection.query(query, [CustomerID], (err, result) => {
             if (err) {
                 console.error('Error querying MySQL database:', err);
@@ -254,11 +250,7 @@ const onGoingTrips = (req, res) => {
 }
 
 const getPreviousTrips = (req, res) => {
-<<<<<<< new-achila
     const query = 'SELECT * FROM Trip WHERE Status = "End" OR Status="Close"';
-=======
-    const query = 'SELECT * FROM Trip WHERE Status = "End"';
->>>>>>> main
     connection.query(query, (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
