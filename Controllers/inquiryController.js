@@ -21,7 +21,7 @@ const addInquiry = (req, res) => {
         }
 
         if (userRows.length === 0) {
-            res.status(404).send("Customer does not exist");
+            res.status(200).send("Customer does not exist");
             return;
         }
 
