@@ -13,5 +13,6 @@ FeedbackRouter.get('/getAllFeedback', authGuard, feedbackController.getAllFeedba
 FeedbackRouter.get('/getFeedback/:FeedbackID', authGuard, feedbackController.getFeedbackById);
 
 FeedbackRouter.delete('/deleteFeedback/:FeedbackID', authGuard, feedbackController.getCurrentUser, feedbackController.deleteFeedback);
+FeedbackRouter.get('/getFeedbackByUser/:UserID', authGuard, feedbackController.getFeedbackByUserID);
 
 module.exports = FeedbackRouter;

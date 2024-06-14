@@ -11,7 +11,7 @@ CustomerPaymentRouter.post('/addPayment',
     customerPaymentController.addPayment
 );
 
-CustomerPaymentRouter.get('/getAllPayments', authGuard, customerPaymentController.getAllPayments);
+CustomerPaymentRouter.get('/getAllPayments', customerPaymentController.getAllPayments);
 
 CustomerPaymentRouter.get('/getPayment/:PaymentID', authGuard, customerPaymentController.getPaymentById);
 
@@ -28,5 +28,5 @@ CustomerPaymentRouter.put('/updatePayment/:PaymentID',
 
 CustomerPaymentRouter.delete('/deletePayment/:PaymentID', authGuard, customerPaymentController.deletePayment);
 CustomerPaymentRouter.get('/getTotalPaymentByTripID/:TripID', authGuard, customerPaymentController.getTtalPaymentByTripID);
-
+CustomerPaymentRouter.get('/getPaymentByCustomerID/:UserID', authGuard, customerPaymentController.getPaymentByCustomerID);
 module.exports = CustomerPaymentRouter;
