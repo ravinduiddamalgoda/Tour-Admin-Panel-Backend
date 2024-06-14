@@ -206,11 +206,55 @@ const deletePayment = (req, res) => {
     });
 };
 
+const getPaymentByCustomerID = (req, res) => {
+    const { UserID } = req.params;
+    console.log(UserID);
+    // Step 1: Get CustomerID using UserID
+    connection.query('SELECT * FROM Customer WHERE UserID = ?', [UserID], (err, customerRows) => {
+        if (err) {
+            console.error('Error querying customer:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        if (customerRows.length === 0) {
+            return res.status(404).send('Customer not found');
+        }
+        const CustomerID = customerRows[0].CustomerID;
+
+        // Step 2: Get TripIDs using CustomerID
+        connection.query('SELECT TripID FROM Trip WHERE CustomerID = ?', [CustomerID], (err, tripRows) => {
+            if (err) {
+                console.error('Error querying trips:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            if (tripRows.length === 0) {
+                return res.status(404).send('No trips found for this customer');
+            }
+
+            const tripIDs = tripRows.map(trip => trip.TripID);
+            console.log(tripIDs);
+            // Step 3: Get Payments using TripIDs
+            connection.query('SELECT * FROM CustomerPayment WHERE TripID IN (?)', [tripIDs], (err, paymentRows) => {
+                if (err) {
+                    console.error('Error querying payments:', err);
+                    return res.status(500).send('Internal Server Error');
+                }
+                if (paymentRows.length === 0) {
+                    return res.status(404).send('No payments found for these trips');
+                }
+
+                res.status(200).json(paymentRows);
+            });
+        });
+    });
+};
+
+
 module.exports = {
     addPayment,
     getAllPayments,
     getPaymentById,
     updatePayment,
     deletePayment,
-    getTtalPaymentByTripID
+    getTtalPaymentByTripID,
+    getPaymentByCustomerID
 };
