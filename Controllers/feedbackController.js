@@ -11,10 +11,10 @@ const getCurrentUser = (req, res, next) => {
 
 // Add feedback
 const addFeedback = (req, res) => {
-    const { UserID ,TripID, Rating, Comment, Status } = req.body;
+    const { UserID ,TripID, Rating, Comment } = req.body;
     // const SenderID = req.senderId;
     const Date = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-
+    const Status = 'Pending';
     connection.query(
         'INSERT INTO Feedback (SenderID, TripID, Rating, Comment, Date, Status) VALUES (?, ?, ?, ?, ?, ?)',
         [UserID, TripID, Rating, Comment, Date, Status],
@@ -24,7 +24,7 @@ const addFeedback = (req, res) => {
                 return res.status(500).send('Internal Server Error');
             }
             res.status(201).json({ message: 'Feedback added successfully' });
-        }
+        } 
     );
 };
 
