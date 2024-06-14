@@ -213,7 +213,7 @@ const getTripByCustomerIDOLD = (req, res) => {
             return res.status(404).json({ error: 'Customer not found' });
         }
         CustomerID = rows[0].CustomerID;
-        const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND EndDate < CURDATE()';
+        const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND Status = "End" OR Status = "Close"';
         connection.query(query, [CustomerID], (err, result) => {
             if (err) {
                 console.error('Error querying MySQL database:', err);
@@ -239,7 +239,7 @@ const getOngoingTrips = (req, res) => {
 
 
 const onGoingTrips = (req, res) => {
-    const query = 'SELECT * FROM Trip WHERE Status != "end"';
+    const query = 'SELECT * FROM Trip WHERE Status != "End"';
     connection.query(query, (err,rows) => {
         if(err){
             console.error('Error querying MySQL database:', err);
@@ -250,7 +250,7 @@ const onGoingTrips = (req, res) => {
 }
 
 const getPreviousTrips = (req, res) => {
-    const query = 'SELECT * FROM Trip WHERE Status = "end"';
+    const query = 'SELECT * FROM Trip WHERE Status = "End"';
     connection.query(query, (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);

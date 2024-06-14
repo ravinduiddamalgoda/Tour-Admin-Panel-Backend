@@ -79,10 +79,26 @@ const deleteFeedback = (req, res) => {
     });
 };
 
+
+const getFeedbackByUserID = (req, res) => {
+    const { UserID } = req.params;
+    connection.query('SELECT * FROM Feedback WHERE UserID = ?', [UserID], (err, rows) => {
+        if (err) {
+            console.error('Error querying feedback:', err);
+            return res.status(500).send('Internal Server Error');
+        }
+        if (rows.length === 0) {
+            return res.status(404).send('Feedback not found');
+        }
+        res.status(200).json(rows);
+    });
+}
+
 module.exports = {
     getCurrentUser,
     addFeedback,
     getAllFeedback,
     getFeedbackById,
-    deleteFeedback
+    deleteFeedback,
+    getFeedbackByUserID
 };
