@@ -213,7 +213,7 @@ const getTripByCustomerIDOLD = (req, res) => {
             return res.status(404).json({ error: 'Customer not found' });
         }
         CustomerID = rows[0].CustomerID;
-        const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND EndDate < CURDATE()';
+        const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND (Status = "End" OR Status = "Close")';
         connection.query(query, [CustomerID], (err, result) => {
             if (err) {
                 console.error('Error querying MySQL database:', err);
@@ -239,7 +239,7 @@ const getOngoingTrips = (req, res) => {
 
 
 const onGoingTrips = (req, res) => {
-    const query = 'SELECT * FROM Trip WHERE Status != "Completed"';
+    const query = 'SELECT * FROM Trip WHERE Status != "end"';
     connection.query(query, (err,rows) => {
         if(err){
             console.error('Error querying MySQL database:', err);
@@ -250,7 +250,7 @@ const onGoingTrips = (req, res) => {
 }
 
 const getPreviousTrips = (req, res) => {
-    const query = 'SELECT * FROM Trip WHERE Status = "Completed"';
+    const query = 'SELECT * FROM Trip WHERE Status = "End" OR Status="Close"';
     connection.query(query, (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
@@ -272,6 +272,19 @@ const updateTripStatus = (req, res) => {
     });
 };
 
+const updateTripdistancepayment = (req, res) => {
+    const { TripID, Distance, Payment, Status } = req.body;
+    const query = 'UPDATE Trip SET TotalDistance = ?, GuidePayment = ?, Status = ? WHERE TripID = ?';
+    connection.query(query, [Distance, Payment, Status, TripID], (err, result) => {
+        if (err) {
+            console.error('Error updating MySQL database:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        res.status(200).json({ message: 'Trip details updated successfully' });
+    });
+};
+
+
 module.exports = {
     addTrip,
     getAllTrips,
@@ -285,6 +298,7 @@ module.exports = {
     updateTripStatus,
     getTripByGuideIDCustomer,
     onGoingTrips,
-    updateTripData
+    updateTripData,
+    updateTripdistancepayment
 
 }
