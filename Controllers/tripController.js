@@ -54,17 +54,17 @@ const addTrip = async (req, res) => {
 }
 
 const updateTripData = (req, res) => {
-    const { TripID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes } = req.body;
-    const query = 'UPDATE Trip SET Price = ?, StartDate = ?, EndDate = ?, AdultsCount = ?, ChildrenCount = ?, Description = ?, SpecialNotes = ? WHERE TripID = ?';
-    connection.query(query, [Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes, TripID], (err, result) => {
+    const { TripID, Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes, GuideID } = req.body;
+    const query = 'UPDATE Trip SET Price = ?, StartDate = ?, EndDate = ?, AdultsCount = ?, ChildrenCount = ?, Description = ?, SpecialNotes = ?, GuideID = ? WHERE TripID = ?';
+    connection.query(query, [Price, StartDate, EndDate, AdultsCount, ChildrenCount, Description, SpecialNotes, GuideID, TripID], (err, result) => {
         if (err) {
             console.error('Error updating MySQL database:', err);
-            return;
+            return res.status(500).send('Internal Server Error');
         }
         res.send("Trip data updated successfully");
     });
+};
 
-}
 
 
 const getLastTripID = () => {

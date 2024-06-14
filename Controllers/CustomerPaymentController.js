@@ -41,11 +41,11 @@ const addPayment = (req, res) => {
 
                         // Update Trip status based on PaymentType
                         let newStatus = '';
-                        if (PaymentType === 'advance') {
+                        if (PaymentType === 'Advance') {
                             newStatus = 'Pending';
-                        } else if (PaymentType === 'active') {
+                        } else if (PaymentType === 'Full') {
                             newStatus = 'Active';
-                        } else if (PaymentType === 'balance') {
+                        } else if (PaymentType === 'Balance') {
                             // Check if total payments for the trip are >= trip price
                             const TotalPaymentsQuery = `
                                 SELECT SUM(Amount) AS TotalPayments
