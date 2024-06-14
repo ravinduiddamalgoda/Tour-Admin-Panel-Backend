@@ -14,7 +14,8 @@ const {
     getPreviousTrips, 
     updateTripStatus,
     updateTripData,
-    getTripByGuideIDCustomer
+    getTripByGuideIDCustomer,
+    updateTripdistancepayment
 } = require('../Controllers/tripController');
 
 TripRouter.post('/addTrip', addTrip);
@@ -30,5 +31,6 @@ TripRouter.get('/get/getPreviousTripsAll', getPreviousTrips);
 TripRouter.put('/updateTripStatus', updateTripStatus);
 TripRouter.get('/get/onGoingTrips', onGoingTrips);
 TripRouter.put('/updateTripData', updateTripData);
+TripRouter.put('/updateTripdistancepayment', updateTripdistancepayment);
 
 module.exports = TripRouter;

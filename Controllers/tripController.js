@@ -213,7 +213,11 @@ const getTripByCustomerIDOLD = (req, res) => {
             return res.status(404).json({ error: 'Customer not found' });
         }
         CustomerID = rows[0].CustomerID;
+<<<<<<< new-achila
+        const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND (Status = "End" OR Status = "Close")';
+=======
         const query = 'SELECT * FROM Trip WHERE CustomerID = ? AND Status = "End" OR Status = "Close"';
+>>>>>>> main
         connection.query(query, [CustomerID], (err, result) => {
             if (err) {
                 console.error('Error querying MySQL database:', err);
@@ -250,7 +254,11 @@ const onGoingTrips = (req, res) => {
 }
 
 const getPreviousTrips = (req, res) => {
+<<<<<<< new-achila
+    const query = 'SELECT * FROM Trip WHERE Status = "End" OR Status="Close"';
+=======
     const query = 'SELECT * FROM Trip WHERE Status = "End"';
+>>>>>>> main
     connection.query(query, (err, rows) => {
         if (err) {
             console.error('Error querying MySQL database:', err);
@@ -272,6 +280,19 @@ const updateTripStatus = (req, res) => {
     });
 };
 
+const updateTripdistancepayment = (req, res) => {
+    const { TripID, Distance, Payment, Status } = req.body;
+    const query = 'UPDATE Trip SET TotalDistance = ?, GuidePayment = ?, Status = ? WHERE TripID = ?';
+    connection.query(query, [Distance, Payment, Status, TripID], (err, result) => {
+        if (err) {
+            console.error('Error updating MySQL database:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        res.status(200).json({ message: 'Trip details updated successfully' });
+    });
+};
+
+
 module.exports = {
     addTrip,
     getAllTrips,
@@ -285,6 +306,7 @@ module.exports = {
     updateTripStatus,
     getTripByGuideIDCustomer,
     onGoingTrips,
-    updateTripData
+    updateTripData,
+    updateTripdistancepayment
 
 }
